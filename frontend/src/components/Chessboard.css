@@ -9,6 +9,9 @@
 .chessboard {
     display: flex;
     flex-direction: column;
+    width: min(92vw, 576px);
+    max-width: 100%;
+    aspect-ratio: 1;
     border-radius: var(--radius-md);
     overflow: hidden;
     position: relative;
@@ -23,11 +26,15 @@
 
 .board-row {
     display: flex;
+    flex: 1;
 }
 
 .square {
-    width: 72px;
-    height: 72px;
+    width: auto;
+    height: auto;
+    flex: 1;
+    aspect-ratio: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,8 +89,8 @@
 
 /* Legal move indicators */
 .legal-move-dot {
-    width: 18px;
-    height: 18px;
+    width: clamp(10px, 2.2vw, 18px);
+    height: clamp(10px, 2.2vw, 18px);
     border-radius: 50%;
     background: var(--square-legal);
     position: absolute;
@@ -105,7 +112,7 @@
 
 /* Chess pieces */
 .piece {
-    font-size: 48px;
+    font-size: clamp(28px, 6.2vw, 48px);
     line-height: 1;
     z-index: 3;
     cursor: grab;
@@ -129,12 +136,12 @@
 
 .animated-piece {
     position: absolute;
-    width: 72px;
-    height: 72px;
+    width: calc(100% / 8);
+    height: calc(100% / 8);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: clamp(28px, 6.2vw, 48px);
     z-index: 9;
     pointer-events: none;
     filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.4));
@@ -244,23 +251,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .square {
-        width: 44px;
-        height: 44px;
-    }
-
-    .piece {
-        font-size: 32px;
-    }
-
-    .legal-move-dot {
-        width: 12px;
-        height: 12px;
-    }
-
-    .animated-piece {
-        width: 44px;
-        height: 44px;
-        font-size: 32px;
+    .chessboard {
+        width: min(95vw, 480px);
     }
 }

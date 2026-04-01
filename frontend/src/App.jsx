@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Chessboard from './components/Chessboard';
 import MoveHistory from './components/MoveHistory';
-import ScoreBar from './components/ScoreBar';
 import Controls from './components/Controls';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import MultiplayerModal from './components/MultiplayerModal';
@@ -91,7 +90,6 @@ export default function App() {
   const [lastMove, setLastMove] = useState(null);
   const [inCheck, setInCheck] = useState(false);
   const [gameStatus, setGameStatus] = useState('ongoing');
-  const [evaluation, setEvaluation] = useState(0);
   const [isThinking, setIsThinking] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [difficulty, setDifficulty] = useState(4);
@@ -122,7 +120,6 @@ export default function App() {
     if (data.sideToMove) setSideToMove(data.sideToMove);
     if (typeof data.inCheck === 'boolean') setInCheck(data.inCheck);
     if (data.gameStatus) setGameStatus(data.gameStatus);
-    if (typeof data.evaluation === 'number') setEvaluation(data.evaluation);
     if (Array.isArray(data.moveHistory)) setMoveHistory(data.moveHistory);
   }, []);
 
@@ -560,26 +557,23 @@ export default function App() {
             {isThinking && <span className="thinking-indicator">Thinking...</span>}
           </div>
 
-          <div className="board-with-eval">
-            <ScoreBar evaluation={evaluation} gameStatus={gameStatus} />
-            <Chessboard
-              board={board}
-              legalMoves={legalMoves}
-              hoverLegalMoves={hoverLegalMoves}
-              selectedSquare={selectedSquare}
-              keyboardCursor={keyboardCursor}
-              lastMove={lastMove}
-              inCheck={inCheck}
-              sideToMove={sideToMove}
-              isFlipped={isFlipped}
-              onSquareClick={handleSquareClick}
-              onSquareHover={handleSquareHover}
-              onSquareLeave={clearHoverMoves}
-              onPieceDrop={handlePieceDrop}
-              disabled={disabledActions || !canMoveForMultiplayer}
-              moveAnimation={moveAnimation}
-            />
-          </div>
+          <Chessboard
+            board={board}
+            legalMoves={legalMoves}
+            hoverLegalMoves={hoverLegalMoves}
+            selectedSquare={selectedSquare}
+            keyboardCursor={keyboardCursor}
+            lastMove={lastMove}
+            inCheck={inCheck}
+            sideToMove={sideToMove}
+            isFlipped={isFlipped}
+            onSquareClick={handleSquareClick}
+            onSquareHover={handleSquareHover}
+            onSquareLeave={clearHoverMoves}
+            onPieceDrop={handlePieceDrop}
+            disabled={disabledActions || !canMoveForMultiplayer}
+            moveAnimation={moveAnimation}
+          />
 
           <div className="player-tag player">
             <span className="player-dot white-dot" />

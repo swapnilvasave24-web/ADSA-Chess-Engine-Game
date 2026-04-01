@@ -3,7 +3,7 @@
  * Interactive board with drag-and-drop, hover highlights, and move animations.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './Chessboard.css';
 
 const PIECE_SYMBOLS = {
@@ -37,6 +37,28 @@ export default function Chessboard({
 }) {
   const [draggedPiece, setDraggedPiece] = useState(null);
   const [dragOver, setDragOver] = useState(null);
+  const [cellSize, setCellSize] = useState(72);
+  const boardRef = useRef(null);
+
+  useEffect(() => {
+    if (!boardRef.current) return;
+
+    const updateSize = () => {
+      const width = boardRef.current?.getBoundingClientRect().width || 576;
+      setCellSize(width / 8);
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(boardRef.current);
+    window.addEventListener('resize', updateSize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, []);
 
   const activeLegalMoves = legalMoves?.length ? legalMoves : (hoverLegalMoves || []);
 
@@ -61,7 +83,7 @@ export default function Chessboard({
     const toDisplayRow = isFlipped ? moveAnimation.toRow : 7 - moveAnimation.toRow;
     const toDisplayCol = isFlipped ? 7 - moveAnimation.toCol : moveAnimation.toCol;
 
-    const cell = 72;
+    const cell = cellSize;
     const dx = (toDisplayCol - fromDisplayCol) * cell;
     const dy = (toDisplayRow - fromDisplayRow) * cell;
 
@@ -70,7 +92,7 @@ export default function Chessboard({
       top: fromDisplayRow * cell,
       transform: `translate(${dx}px, ${dy}px)`,
     };
-  }, [moveAnimation, isFlipped]);
+  }, [moveAnimation, isFlipped, cellSize]);
 
   const getSquareColor = (row, col) => ((row + col) % 2 === 0 ? 'dark' : 'light');
 
@@ -194,7 +216,7 @@ export default function Chessboard({
 
   return (
     <div className="chessboard-container">
-      <div className="chessboard">
+      <div className="chessboard" ref={boardRef}>
         {Array.from({ length: 8 }, (_, viewRow) => (
           <div key={viewRow} className="board-row">
             {Array.from({ length: 8 }, (_, viewCol) => renderSquare(viewRow, viewCol))}
