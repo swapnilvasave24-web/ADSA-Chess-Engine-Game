@@ -1,0 +1,315 @@
+/* CheckmateAI - App Layout & Styles */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle background pattern */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(162, 155, 254, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(108, 92, 231, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .app::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(162, 155, 254, 0.03) 0%, transparent 50%);
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-xl);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  background: rgba(10, 10, 15, 0.7);
+}
+
+[data-theme="light"] .app-header {
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+.logo h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(30deg);
+}
+
+.sound-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.sound-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.multi-toggle {
+  height: 36px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(253, 203, 110, 0.14);
+  color: var(--text-primary);
+  padding: 0 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.multi-toggle:hover {
+  background: rgba(253, 203, 110, 0.24);
+}
+
+/* Main Layout */
+.app-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  position: relative;
+  z-index: 1;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 280px;
+  min-width: 260px;
+}
+
+.panel-left {
+  animation: fadeIn 0.4s ease;
+}
+
+.panel-right {
+  animation: fadeIn 0.4s ease 0.1s both;
+}
+
+/* Board Area */
+.board-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  animation: fadeIn 0.3s ease;
+}
+
+.board-with-eval {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.player-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  width: fit-content;
+}
+
+.player-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.white-dot {
+  background: #e8e8e8;
+  border: 1px solid #ccc;
+}
+
+.black-dot {
+  background: #333;
+  border: 1px solid #555;
+}
+
+.thinking-indicator {
+  font-size: 0.7rem;
+  color: var(--warning);
+  animation: pulse 1.5s infinite;
+  margin-left: var(--space-xs);
+}
+
+.kbd-hint {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.app-footer {
+  text-align: center;
+  padding: var(--space-md);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 1;
+}
+
+/* Connection Error */
+.connection-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: var(--space-2xl);
+  border-radius: var(--radius-xl);
+  max-width: 420px;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.6;
+}
+
+.connection-error h2 {
+  font-size: 1.3rem;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.connection-error p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  font-size: 0.9rem;
+}
+
+.connection-error code {
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.retry-btn {
+  padding: var(--space-sm) var(--space-xl);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  color: white;
+  font-family: var(--font-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.retry-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .app-main {
+    flex-wrap: wrap;
+    padding: var(--space-md);
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 600px;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .logo h1 {
+    font-size: 1.1rem;
+  }
+
+  .app-main {
+    gap: var(--space-md);
+  }
+}

@@ -1,0 +1,165 @@
+/* CheckmateAI - Controls Styles */
+
+.controls {
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.game-status {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    color: var(--text-primary);
+    transition: all var(--transition-normal);
+}
+
+.game-status.thinking {
+    animation: pulse 1.5s infinite;
+    background: rgba(253, 203, 110, 0.15);
+    border-color: rgba(253, 203, 110, 0.3);
+}
+
+.game-status.game-over {
+    background: rgba(0, 184, 148, 0.15);
+    border-color: rgba(0, 184, 148, 0.3);
+}
+
+.control-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.control-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.difficulty-selector {
+    display: flex;
+    gap: var(--space-xs);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 3px;
+    border-radius: var(--radius-md);
+}
+
+[data-theme="light"] .difficulty-selector {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.difficulty-btn {
+    flex: 1;
+    padding: var(--space-sm) var(--space-md);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.difficulty-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.difficulty-btn.active {
+    background: var(--accent-primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.action-btn {
+    flex: 1 1 30%;
+    min-width: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-family: var(--font-primary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+[data-theme="light"] .action-btn {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.new-game-btn {
+    background: rgba(108, 92, 231, 0.15);
+    border-color: rgba(108, 92, 231, 0.3);
+    color: var(--accent-secondary);
+}
+
+.new-game-btn:hover {
+    background: rgba(108, 92, 231, 0.25) !important;
+    border-color: var(--accent-primary) !important;
+}
+
+.hint-btn {
+    background: rgba(253, 203, 110, 0.15);
+    border-color: rgba(253, 203, 110, 0.35);
+    color: var(--text-primary);
+}
+
+.hint-btn:hover:not(:disabled) {
+    background: rgba(253, 203, 110, 0.25) !important;
+    border-color: rgba(253, 203, 110, 0.5) !important;
+}
+
+.hint-output {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+[data-theme="light"] .hint-output {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+}

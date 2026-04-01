@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Frontend
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# Backend
+server/node_modules/
+
+# C++ Engine
+engine/build/
+engine/bin/
+engine/obj/
+*.o
+*.out
+*.exe
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env
+
+# OS
+*.log
+Thumbs.db
+.thumbs.db
+
+# Temporary files
+*.tmp
+.temp/
+tmp/
+
+# Cache
+.cache/
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build artifacts
+dist/
+build/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+.vscode-test
+
+# Misc
+.env.local
+.env.*.local
+*.pem
+config.local.js

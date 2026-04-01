@@ -1,0 +1,121 @@
+/* CheckmateAI - Performance Metrics Styles */
+
+.performance-metrics {
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+}
+
+.metrics-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: var(--space-md);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metrics-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.metric-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+    transition: background var(--transition-fast);
+    animation: slideIn 0.2s ease;
+    animation-fill-mode: both;
+}
+
+.metric-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.metric-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.metric-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.metric-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.metric-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.metric-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.metric-icon {
+    font-size: 1.1rem;
+    width: 28px;
+    text-align: center;
+}
+
+.metric-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.metric-value {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--accent-secondary);
+    min-width: 60px;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.metric-dsa {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    background: rgba(108, 92, 231, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.principal-variation {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.pv-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.pv-moves {
+    color: var(--accent-secondary);
+    word-break: break-all;
+}

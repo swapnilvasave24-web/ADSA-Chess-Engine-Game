@@ -1,0 +1,131 @@
+.captured-pieces-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(20, 25, 40, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 0.5rem;
+}
+
+.captures-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.captures-area.flipped {
+  flex-direction: column-reverse;
+}
+
+.captures-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.captures-label.white-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.captures-label.black-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.captured-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem;
+}
+
+.captured-pieces {
+  display: flex;
+  gap: 0.2rem;
+  flex: 1;
+  flex-wrap: wrap;
+  min-height: 1.6rem;
+  align-items: center;
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: none;
+}
+
+.captured-piece {
+  font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.3rem;
+  height: 1.3rem;
+  background: rgba(100, 150, 255, 0.12);
+  border-radius: 3px;
+  border: 1px solid rgba(100, 150, 255, 0.25);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.captured-piece:hover {
+  background: rgba(100, 150, 255, 0.2);
+  border-color: rgba(100, 150, 255, 0.4);
+  transform: scale(1.08);
+}
+
+.no-captures {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.material-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  min-width: fit-content;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .captured-pieces-container {
+    padding: 0.6rem;
+    gap: 0.6rem;
+  }
+
+  .captures-area {
+    padding: 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .captured-pieces {
+    max-width: none;
+  }
+
+  .captured-piece {
+    font-size: 1rem;
+    min-width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .captures-label {
+    font-size: 0.7rem;
+  }
+
+  .material-value {
+    font-size: 0.65rem;
+  }
+}
