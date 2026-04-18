@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Chessboard from './components/Chessboard';
 import MoveHistory from './components/MoveHistory';
+import ScoreBar from './components/ScoreBar';
 import Controls from './components/Controls';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import MultiplayerModal from './components/MultiplayerModal';
 import MultiplayerPanel from './components/MultiplayerPanel';
 import CapturedPieces from './components/CapturedPieces';
+import AuthScreen from './components/AuthScreen';
+import LearnChessPage from './components/LearnChessPage';
 import {
   newGame,
   makeMove,
@@ -14,9 +17,12 @@ import {
   getLegalMoves,
   undoMove,
 } from './utils/api';
+import { clearSession, loadSession } from './utils/auth';
 import soundManager from './utils/soundManager';
 import MultiplayerClient from './utils/multiplayerClient';
 import './App.css';
+
+const LESSON_PROGRESS_KEY = 'checkmateai.lessonProgress';
 
 const INITIAL_BOARD = [
   ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
@@ -81,6 +87,17 @@ const calculateCapturedPieces = (initialBoard, currentBoard) => {
 };
 
 export default function App() {
+  const [authUser, setAuthUser] = useState(() => loadSession());
+  const [currentView, setCurrentView] = useState('play');
+  const [completedLessons, setCompletedLessons] = useState(() => {
+    try {
+      const raw = window.localStorage.getItem(LESSON_PROGRESS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      return new Set();
+    }
+  });
   const [board, setBoard] = useState(INITIAL_BOARD);
   const [sideToMove, setSideToMove] = useState('white');
   const [selectedSquare, setSelectedSquare] = useState(null);
@@ -90,6 +107,7 @@ export default function App() {
   const [lastMove, setLastMove] = useState(null);
   const [inCheck, setInCheck] = useState(false);
   const [gameStatus, setGameStatus] = useState('ongoing');
+  const [evaluation, setEvaluation] = useState(0);
   const [isThinking, setIsThinking] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [difficulty, setDifficulty] = useState(4);
@@ -120,6 +138,7 @@ export default function App() {
     if (data.sideToMove) setSideToMove(data.sideToMove);
     if (typeof data.inCheck === 'boolean') setInCheck(data.inCheck);
     if (data.gameStatus) setGameStatus(data.gameStatus);
+    if (typeof data.evaluation === 'number') setEvaluation(data.evaluation);
     if (Array.isArray(data.moveHistory)) setMoveHistory(data.moveHistory);
   }, []);
 
@@ -150,9 +169,23 @@ export default function App() {
     setTimeout(() => setMoveAnimation(null), 320);
   }, []);
 
-  const initGame = useCallback(async () => {
+  const persistLessonProgress = useCallback((nextSet) => {
+    window.localStorage.setItem(LESSON_PROGRESS_KEY, JSON.stringify([...nextSet]));
+  }, []);
+
+  const toggleLessonComplete = useCallback((lessonId) => {
+    setCompletedLessons((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      persistLessonProgress(next);
+      return next;
+    });
+  }, [persistLessonProgress]);
+
+  const initGame = useCallback(async (fen = null) => {
     try {
-      const result = await newGame();
+      const result = await newGame(fen);
       if (result.status !== 'ok') {
         setConnectionError(true);
         return;
@@ -174,8 +207,8 @@ export default function App() {
   }, [updateStateFromResponse]);
 
   useEffect(() => {
-    initGame();
-  }, [initGame]);
+    if (authUser) initGame();
+  }, [authUser, initGame]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -213,34 +246,6 @@ export default function App() {
   };
 
   const disabledActions = isThinking || gameStatus !== 'ongoing';
-
-  const handleSquareClick = useCallback(async (square) => {
-    if (disabledActions) return;
-
-    if (selectedSquare === square) {
-      setSelectedSquare(null);
-      setLegalMoves([]);
-      setHoverLegalMoves([]);
-      return;
-    }
-
-    if (selectedSquare && legalMoves.some((m) => m.to === square)) {
-      await handlePlayerMove(selectedSquare, square);
-      return;
-    }
-
-    const { row, col } = squareToCoords(square);
-    const piece = board[row]?.[col];
-
-    if (piece && sideToMove === 'white' && piece >= 'A' && piece <= 'Z') {
-      setSelectedSquare(square);
-      setHoverLegalMoves([]);
-      await requestSquareMoves(square);
-    } else {
-      setSelectedSquare(null);
-      setLegalMoves([]);
-    }
-  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove]);
 
   const applyMoveResponse = useCallback((moveStr, response, movedPiece, capture) => {
     runMoveAnimation(moveStr, movedPiece, capture);
@@ -306,6 +311,34 @@ export default function App() {
       soundManager.illegalMoveSound();
     }
   }, [applyMoveResponse, board, difficulty, disabledActions, isMultiplayer]);
+
+  const handleSquareClick = useCallback(async (square) => {
+    if (disabledActions) return;
+
+    if (selectedSquare === square) {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+      setHoverLegalMoves([]);
+      return;
+    }
+
+    if (selectedSquare && legalMoves.some((m) => m.to === square)) {
+      await handlePlayerMove(selectedSquare, square);
+      return;
+    }
+
+    const { row, col } = squareToCoords(square);
+    const piece = board[row]?.[col];
+
+    if (piece && sideToMove === 'white' && piece >= 'A' && piece <= 'Z') {
+      setSelectedSquare(square);
+      setHoverLegalMoves([]);
+      await requestSquareMoves(square);
+    } else {
+      setSelectedSquare(null);
+      setLegalMoves([]);
+    }
+  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, handlePlayerMove]);
 
   const handlePieceDrop = useCallback(async (from, to) => {
     await handlePlayerMove(from, to);
@@ -487,6 +520,17 @@ export default function App() {
     initGame();
   };
 
+  const handleLogout = () => {
+    clearSession();
+    window.location.reload();
+  };
+
+  if (!authUser?.user) {
+    return <AuthScreen onAuthenticated={setAuthUser} />;
+  }
+
+  const signedInUser = authUser.user;
+
   if (connectionError) {
     return (
       <div className="app">
@@ -512,6 +556,19 @@ export default function App() {
         </div>
 
         <div className="header-right">
+          <div className="account-chip glass">
+            <div className="account-avatar">
+              {signedInUser.picture ? (
+                <img src={signedInUser.picture} alt={signedInUser.name} />
+              ) : (
+                <span>{(signedInUser.name || signedInUser.email || 'U').slice(0, 1).toUpperCase()}</span>
+              )}
+            </div>
+            <div className="account-meta">
+              <strong>{signedInUser.name}</strong>
+              <span>{signedInUser.email}</span>
+            </div>
+          </div>
           <button className="theme-toggle" onClick={() => setTheme((prev) => prev === 'dark' ? 'light' : 'dark')} title="Toggle Theme">
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
@@ -526,81 +583,102 @@ export default function App() {
           >
             {soundEnabled ? '🔊' : '🔇'}
           </button>
+          <button
+            className={`learn-toggle ${currentView === 'learn' ? 'active' : ''}`}
+            onClick={() => setCurrentView('learn')}
+          >
+            🎓 Learn Chess
+          </button>
           <button className="multi-toggle" onClick={() => setShowMultiplayerModal(true)}>
             Multiplayer
+          </button>
+          <button className="logout-button" onClick={handleLogout}>
+            Log out
           </button>
         </div>
       </header>
 
-      <main className="app-main">
-        <div className="panel panel-left">
-          <Controls
-            onNewGame={initGame}
-            onUndo={handleUndo}
-            onHint={handleHint}
-            onFlip={() => setIsFlipped((prev) => !prev)}
-            difficulty={difficulty}
-            onDifficultyChange={setDifficulty}
-            gameStatus={gameStatus}
-            sideToMove={sideToMove}
-            isThinking={isThinking}
-            hintMove={hintMove}
-            hintLoading={hintLoading}
+      <main className={`app-main ${currentView === 'learn' ? 'learn-mode' : ''}`}>
+        {currentView === 'learn' ? (
+          <LearnChessPage
+            completedLessons={completedLessons}
+            onToggleLessonComplete={toggleLessonComplete}
           />
-          <PerformanceMetrics metrics={metrics} />
-        </div>
+        ) : (
+          <>
+            <div className="panel panel-left">
+              <Controls
+                onNewGame={initGame}
+                onUndo={handleUndo}
+                onHint={handleHint}
+                onFlip={() => setIsFlipped((prev) => !prev)}
+                difficulty={difficulty}
+                onDifficultyChange={setDifficulty}
+                gameStatus={gameStatus}
+                sideToMove={sideToMove}
+                isThinking={isThinking}
+                hintMove={hintMove}
+                hintLoading={hintLoading}
+              />
+              <PerformanceMetrics metrics={metrics} />
+            </div>
 
-        <div className="board-area">
-          <div className="player-tag opponent">
-            <span className="player-dot black-dot" />
-            <span>{isMultiplayer ? 'Opponent (Black)' : 'CheckmateAI (Black)'}</span>
-            {isThinking && <span className="thinking-indicator">Thinking...</span>}
-          </div>
+            <div className="board-area">
+              <div className="player-tag opponent">
+                <span className="player-dot black-dot" />
+                <span>{isMultiplayer ? 'Opponent (Black)' : 'CheckmateAI (Black)'}</span>
+                {isThinking && <span className="thinking-indicator">Thinking...</span>}
+              </div>
 
-          <Chessboard
-            board={board}
-            legalMoves={legalMoves}
-            hoverLegalMoves={hoverLegalMoves}
-            selectedSquare={selectedSquare}
-            keyboardCursor={keyboardCursor}
-            lastMove={lastMove}
-            inCheck={inCheck}
-            sideToMove={sideToMove}
-            isFlipped={isFlipped}
-            onSquareClick={handleSquareClick}
-            onSquareHover={handleSquareHover}
-            onSquareLeave={clearHoverMoves}
-            onPieceDrop={handlePieceDrop}
-            disabled={disabledActions || !canMoveForMultiplayer}
-            moveAnimation={moveAnimation}
-          />
+              <div className="board-with-eval">
+                <ScoreBar evaluation={evaluation} gameStatus={gameStatus} />
+                <Chessboard
+                  board={board}
+                  legalMoves={legalMoves}
+                  hoverLegalMoves={hoverLegalMoves}
+                  selectedSquare={selectedSquare}
+                  keyboardCursor={keyboardCursor}
+                  lastMove={lastMove}
+                  inCheck={inCheck}
+                  sideToMove={sideToMove}
+                  isFlipped={isFlipped}
+                  onSquareClick={handleSquareClick}
+                  onSquareHover={handleSquareHover}
+                  onSquareLeave={clearHoverMoves}
+                  onPieceDrop={handlePieceDrop}
+                  disabled={disabledActions || !canMoveForMultiplayer}
+                  moveAnimation={moveAnimation}
+                />
+              </div>
 
-          <div className="player-tag player">
-            <span className="player-dot white-dot" />
-            <span>{isMultiplayer ? 'You' : 'You (White)'}</span>
-          </div>
+              <div className="player-tag player">
+                <span className="player-dot white-dot" />
+                <span>{isMultiplayer ? 'You' : 'You (White)'}</span>
+              </div>
 
-          <div className="kbd-hint">Input: {algebraicInput || '-'} | Keys: arrows navigate, Enter select, Space flip</div>
-        </div>
+              <div className="kbd-hint">Input: {algebraicInput || '-'} | Keys: arrows navigate, Enter select, Space flip</div>
+            </div>
 
-        <div className="panel panel-right">
-          <MoveHistory moves={moveHistory} />
-          <CapturedPieces
-            whiteCaptured={whiteCaptured}
-            blackCaptured={blackCaptured}
-            isFlipped={isFlipped}
-          />
-          {isMultiplayer && (
-            <MultiplayerPanel
-              connected={multiplayerConnected}
-              gameId={multiplayerGameId}
-              playerColor={multiplayerColor}
-              messages={chatMessages}
-              onSendMessage={(text) => multiplayerRef.current?.sendMessage(text)}
-              onLeave={leaveMultiplayer}
-            />
-          )}
-        </div>
+            <div className="panel panel-right">
+              <MoveHistory moves={moveHistory} />
+              <CapturedPieces
+                whiteCaptured={whiteCaptured}
+                blackCaptured={blackCaptured}
+                isFlipped={isFlipped}
+              />
+              {isMultiplayer && (
+                <MultiplayerPanel
+                  connected={multiplayerConnected}
+                  gameId={multiplayerGameId}
+                  playerColor={multiplayerColor}
+                  messages={chatMessages}
+                  onSendMessage={(text) => multiplayerRef.current?.sendMessage(text)}
+                  onLeave={leaveMultiplayer}
+                />
+              )}
+            </div>
+          </>
+        )}
       </main>
 
       <footer className="app-footer">

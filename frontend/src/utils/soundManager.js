@@ -15,7 +15,7 @@ class SoundManager {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       this.audioContext = new AudioContext();
-    } catch (e) {
+    } catch {
       console.warn('Web Audio API not supported');
     }
   }
