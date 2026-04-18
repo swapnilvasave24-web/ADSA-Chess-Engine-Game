@@ -4,6 +4,17 @@ import './AuthScreen.css';
 
 const DEFAULT_GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
+const BOARD_PATTERN = [
+  [0, 1, 0, 1, 0, 1, 0, 1],
+  [1, 0, 1, 0, 1, 0, 1, 0],
+  [0, 1, 0, 1, 0, 1, 0, 1],
+  [1, 0, 1, 0, 1, 0, 1, 0],
+  [0, 1, 0, 1, 0, 1, 0, 1],
+  [1, 0, 1, 0, 1, 0, 1, 0],
+  [0, 1, 0, 1, 0, 1, 0, 1],
+  [1, 0, 1, 0, 1, 0, 1, 0],
+];
+
 export default function AuthScreen({ onAuthenticated }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
@@ -16,6 +27,7 @@ export default function AuthScreen({ onAuthenticated }) {
   const [googleError, setGoogleError] = useState('');
 
   const googleButtonRef = useRef(null);
+  const googleButtonHostRef = useRef(null);
   const clientId = useMemo(() => DEFAULT_GOOGLE_CLIENT_ID.trim(), []);
 
   useEffect(() => {
@@ -37,28 +49,42 @@ export default function AuthScreen({ onAuthenticated }) {
   }, [clientId]);
 
   useEffect(() => {
-    if (!clientId || !googleReady || !googleButtonRef.current || !window.google?.accounts?.id) return;
+    if (!clientId || !googleReady || !googleButtonRef.current || !googleButtonHostRef.current || !window.google?.accounts?.id) return;
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response) => {
-        const result = createGoogleSession(response.credential);
-        if (result.status === 'ok') {
-          onAuthenticated(result.session);
-          return;
-        }
-        setGoogleError(result.message);
-      },
+    const renderGoogleButton = () => {
+      const width = Math.max(240, Math.min(googleButtonHostRef.current.clientWidth, 440));
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response) => {
+          const result = createGoogleSession(response.credential);
+          if (result.status === 'ok') {
+            onAuthenticated(result.session);
+            return;
+          }
+          setGoogleError(result.message);
+        },
+      });
+
+      googleButtonRef.current.innerHTML = '';
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: 'outline',
+        size: width < 340 ? 'medium' : 'large',
+        width,
+        text: 'signin_with',
+        shape: 'pill',
+      });
+    };
+
+    renderGoogleButton();
+
+    const resizeObserver = new ResizeObserver(() => {
+      renderGoogleButton();
     });
 
-    googleButtonRef.current.innerHTML = '';
-    window.google.accounts.id.renderButton(googleButtonRef.current, {
-      theme: 'outline',
-      size: 'large',
-      width: 320,
-      text: 'signin_with',
-      shape: 'pill',
-    });
+    resizeObserver.observe(googleButtonHostRef.current);
+
+    return () => resizeObserver.disconnect();
   }, [clientId, googleReady, onAuthenticated]);
 
   const resetMessages = () => {
@@ -108,70 +134,77 @@ export default function AuthScreen({ onAuthenticated }) {
   return (
     <div className="auth-screen">
       <div className="auth-shell glass">
-        <section className="auth-hero">
-          <div className="auth-brand">
-            <span className="auth-brand-mark">♛</span>
-            <div>
-              <p className="auth-kicker">CheckmateAI</p>
-              <h1>Sign in to your chess workspace</h1>
-            </div>
-          </div>
+        <section className="auth-visual" aria-hidden="true">
+          <div className="auth-visual-orb auth-visual-orb-blue" />
+          <div className="auth-visual-orb auth-visual-orb-gold" />
 
-          <p className="auth-copy">
-            Save your session, switch between manual accounts, or continue with Google before entering the board.
-          </p>
-
-          <div className="auth-highlights">
-            <div>
-              <strong>Manual account</strong>
-              <span>Email and password stored locally for demo use.</span>
-            </div>
-            <div>
-              <strong>Google sign-in</strong>
-              <span>Uses Google Identity Services when a client ID is configured.</span>
+          <div className="auth-visual-frame">
+            <div className="auth-board">
+              {BOARD_PATTERN.map((row, rowIndex) =>
+                row.map((tile, colIndex) => (
+                  <span
+                    key={`tile-${rowIndex}-${colIndex}`}
+                    className={`auth-board-tile ${tile === 0 ? 'light' : 'dark'}`}
+                  />
+                )),
+              )}
+              <span className="auth-piece auth-piece-king">♔</span>
+              <span className="auth-piece auth-piece-queen">♛</span>
+              <span className="auth-piece auth-piece-knight">♞</span>
             </div>
           </div>
         </section>
 
         <section className="auth-panel">
+          <div className="auth-panel-top">
+            <div className="auth-brand-lockup">
+              <span className="auth-brand-mark">♛</span>
+              <div>
+                <p className="auth-brand-kicker">CheckmateAI</p>
+                <h1>{mode === 'signup' ? 'Sign Up' : 'Sign In'}</h1>
+              </div>
+            </div>
+            <p className="auth-brand-copy">Enter the board with a clean, fast, premium chess experience.</p>
+          </div>
+
           <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
             <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); resetMessages(); }} type="button">
-              Log in
+              Sign In
             </button>
             <button className={mode === 'signup' ? 'active' : ''} onClick={() => { setMode('signup'); resetMessages(); }} type="button">
-              Sign up
+              Sign Up
             </button>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             {mode === 'signup' && (
-              <label>
-                Full name
-                <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" autoComplete="name" />
+              <label className="floating-field">
+                <input value={name} onChange={(event) => setName(event.target.value)} placeholder=" " autoComplete="name" />
+                <span>Full name</span>
               </label>
             )}
 
-            <label>
-              Email address
-              <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" type="email" autoComplete="email" />
+            <label className="floating-field">
+              <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder=" " type="email" autoComplete="email" />
+              <span>Email address</span>
             </label>
 
-            <label>
-              Password
-              <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="••••••••" type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />
+            <label className="floating-field">
+              <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder=" " type="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />
+              <span>Password</span>
             </label>
 
             {mode === 'signup' && (
-              <label>
-                Confirm password
-                <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Repeat password" type="password" autoComplete="new-password" />
+              <label className="floating-field">
+                <input value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder=" " type="password" autoComplete="new-password" />
+                <span>Confirm password</span>
               </label>
             )}
 
             {message && <div className="auth-message auth-message-error">{message}</div>}
 
             <button className="auth-submit" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Please wait...' : mode === 'signup' ? 'Create account' : 'Log in'}
+              {isSubmitting ? 'Please wait...' : mode === 'signup' ? 'Create account' : 'Sign in'}
             </button>
           </form>
 
@@ -181,13 +214,13 @@ export default function AuthScreen({ onAuthenticated }) {
 
           <div className="auth-google">
             {clientId ? (
-              <>
+              <div ref={googleButtonHostRef} className="google-button-host">
                 <div ref={googleButtonRef} className="google-button-holder" />
                 {googleError && <div className="auth-message auth-message-error">{googleError}</div>}
-              </>
+              </div>
             ) : (
               <div className="auth-message auth-message-info">
-                Set VITE_GOOGLE_CLIENT_ID in frontend/.env to enable the Google sign-in button.
+                Set VITE_GOOGLE_CLIENT_ID in frontend/.env to enable the Google button.
               </div>
             )}
           </div>
