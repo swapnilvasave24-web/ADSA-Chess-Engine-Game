@@ -278,12 +278,6 @@ export default function LearnChessPage() {
 
   return (
     <div className="learn-page">
-      <header className="learn-hero glass">
-        <p>CheckmateAI Learning Deck</p>
-        <h2>Flashcard Academy</h2>
-        <span>Bite-sized, visual, and theory-focused. Click any card to flip and reveal the core concept.</span>
-      </header>
-
       <nav className="learn-tabs" aria-label="Learn Chess sections">
         {TABS.map((tab) => (
           <button

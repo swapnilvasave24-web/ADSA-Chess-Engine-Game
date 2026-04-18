@@ -6,30 +6,6 @@
   min-width: 0;
 }
 
-.learn-hero {
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-}
-
-.learn-hero p {
-  color: var(--accent-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.78rem;
-}
-
-.learn-hero h2 {
-  margin-top: 6px;
-  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
-  line-height: 1.1;
-}
-
-.learn-hero span {
-  display: block;
-  margin-top: 8px;
-  color: var(--text-secondary);
-}
-
 .learn-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -325,7 +301,6 @@
     grid-template-columns: 1fr;
   }
 
-  .learn-hero,
   .section-progress,
   .flashcard-face {
     padding: var(--space-md);
