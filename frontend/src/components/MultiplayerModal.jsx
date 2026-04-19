@@ -20,6 +20,14 @@ export default function MultiplayerModal({
   const [gameId, setGameId] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const openCreateMode = () => {
+    setMode('create');
+  };
+
+  const openJoinMode = () => {
+    setMode('join');
+  };
+
   const handleCreateGame = () => {
     if (playerName.trim()) {
       onCreateGame(playerName);
@@ -48,10 +56,10 @@ export default function MultiplayerModal({
           <div className="modal-body">
             <p>Play against another human opponent in real-time.</p>
             <div className="modal-buttons">
-              <button className="modal-btn create-btn" onClick={() => setMode('create')}>
+              <button className="modal-btn create-btn" onClick={openCreateMode}>
                 ➕ Create Game
               </button>
-              <button className="modal-btn join-btn" onClick={() => setMode('join')}>
+              <button className="modal-btn join-btn" onClick={openJoinMode}>
                 🔗 Join Game
               </button>
               <button className="modal-btn cancel-btn" onClick={onClose}>
@@ -93,6 +101,7 @@ export default function MultiplayerModal({
                     Back
                   </button>
                 </div>
+                {errorMessage && <div className="modal-error">{errorMessage}</div>}
               </>
             ) : (
               <>

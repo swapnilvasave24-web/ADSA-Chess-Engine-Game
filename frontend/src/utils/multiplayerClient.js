@@ -87,6 +87,15 @@ class MultiplayerClient {
       candidates.push(serverUrl);
     }
 
+    const isLocalHost =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      import.meta.env.DEV;
+
+    if (isLocalHost) {
+      candidates.push('ws://localhost:3001', 'ws://127.0.0.1:3001');
+    }
+
     const wsBase = import.meta.env.VITE_WS_URL;
     const apiBase = import.meta.env.VITE_API_BASE_URL;
 
