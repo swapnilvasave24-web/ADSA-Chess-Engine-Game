@@ -16,10 +16,11 @@ class MultiplayerClient {
     this.onPlayerLeft = onPlayerLeft;
   }
 
-  connect(serverUrl = 'ws://localhost:3001') {
+  connect(serverUrl) {
     return new Promise((resolve, reject) => {
       try {
-        this.ws = new WebSocket(serverUrl);
+        const resolvedUrl = serverUrl || this.getDefaultWebSocketUrl();
+        this.ws = new WebSocket(resolvedUrl);
 
         this.ws.onopen = () => {
           this.connected = true;
@@ -49,6 +50,25 @@ class MultiplayerClient {
         reject(err);
       }
     });
+  }
+
+  getDefaultWebSocketUrl() {
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const wsBase = import.meta.env.VITE_WS_URL;
+
+    if (wsBase) {
+      return wsBase;
+    }
+
+    if (apiBase && /^https?:\/\//.test(apiBase)) {
+      return apiBase
+        .replace(/^http:/, 'ws:')
+        .replace(/^https:/, 'wss:')
+        .replace(/\/api\/?$/, '');
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}`;
   }
 
   handleMessage(message) {

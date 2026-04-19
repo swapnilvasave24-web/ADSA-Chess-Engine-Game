@@ -488,6 +488,8 @@ export default function App() {
           setMultiplayerGameId(event.gameId || '');
           setCreatedGameId(event.gameId || '');
           setMultiplayerColor(event.playerColor || 'white');
+          setIsMultiplayer(true);
+          setShowMultiplayerModal(false);
           if (event.state) updateStateFromResponse(event.state);
           setIsCreating(false);
           return;
@@ -497,6 +499,8 @@ export default function App() {
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
           setMultiplayerColor(event.playerColor || 'white');
+          setIsMultiplayer(true);
+          setShowMultiplayerModal(false);
           if (event.state) updateStateFromResponse(event.state);
           setIsJoining(false);
           return;
@@ -526,7 +530,6 @@ export default function App() {
       setIsCreating(true);
       await ensureMultiplayerConnection();
       multiplayerRef.current.createGame(playerName);
-      setIsMultiplayer(true);
     } catch (err) {
       console.error('Failed to create game:', err);
       setIsCreating(false);
@@ -538,8 +541,6 @@ export default function App() {
       setIsJoining(true);
       await ensureMultiplayerConnection();
       multiplayerRef.current.joinGame(gameId, playerName);
-      setIsMultiplayer(true);
-      setShowMultiplayerModal(false);
     } catch (err) {
       console.error('Failed to join game:', err);
       setIsJoining(false);
