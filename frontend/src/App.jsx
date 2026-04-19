@@ -258,6 +258,7 @@ export default function App() {
   const handleSquareHover = async (square) => {
     if (disabledActions) return;
     if (selectedSquare) return;
+    if (isMultiplayer) return;
     if (isMultiplayer && sideToMove !== multiplayerColor) return;
 
     const { row, col } = squareToCoords(square);
@@ -279,6 +280,10 @@ export default function App() {
   };
 
   const requestSquareMoves = async (square) => {
+    if (isMultiplayer) {
+      setLegalMoves([]);
+      return;
+    }
     const result = await getLegalMoves(square);
     if (result.status === 'ok') setLegalMoves(result.moves || []);
   };
@@ -380,9 +385,16 @@ export default function App() {
       return;
     }
 
-    if (selectedSquare && legalMoves.some((m) => m.to === square)) {
-      await handlePlayerMove(selectedSquare, square);
-      return;
+    if (selectedSquare) {
+      if (isMultiplayer && selectedSquare !== square) {
+        await handlePlayerMove(selectedSquare, square);
+        return;
+      }
+
+      if (legalMoves.some((m) => m.to === square)) {
+        await handlePlayerMove(selectedSquare, square);
+        return;
+      }
     }
 
     const { row, col } = squareToCoords(square);
@@ -399,7 +411,7 @@ export default function App() {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
-  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, currentPlayerColor, handlePlayerMove]);
+  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, currentPlayerColor, handlePlayerMove, isMultiplayer]);
 
   const handlePieceDrop = useCallback(async (from, to) => {
     await handlePlayerMove(from, to);
