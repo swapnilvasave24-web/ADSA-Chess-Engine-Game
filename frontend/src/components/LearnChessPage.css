@@ -397,15 +397,46 @@
 }
 
 @media (max-width: 768px) {
+  .learn-page {
+    gap: var(--space-sm);
+  }
+
   .learn-page-top {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+    padding: var(--space-sm) var(--space-md);
   }
 
-  .flashcard-grid,
-  .learn-tabs,
+  .learn-back-btn {
+    width: 100%;
+    height: 38px;
+  }
+
+  .learn-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .learn-tab {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
   .section-progress {
     grid-template-columns: 1fr;
+    padding: var(--space-sm);
+  }
+
+  .flashcard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
   }
 
   .section-progress,
@@ -414,6 +445,43 @@
   }
 
   .flashcard {
-    height: 230px;
+    height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .learn-page-top h2 {
+    font-size: 1rem;
+  }
+
+  .learn-page-kicker {
+    font-size: 0.68rem;
+  }
+
+  .flashcard {
+    height: 205px;
+  }
+
+  .flashcard-face {
+    padding: 12px;
+  }
+
+  .front-piece-icon,
+  .notation-symbol,
+  .rule-visual {
+    font-size: clamp(2.4rem, 12vw, 3.4rem);
+  }
+
+  .card-front-piece h3,
+  .card-front-notation h3,
+  .card-front-history h3,
+  .card-front-rule h3,
+  .card-back-content h4 {
+    font-size: 0.92rem;
+  }
+
+  .card-back-content p,
+  .card-back-content li {
+    font-size: 0.8rem;
   }
 }

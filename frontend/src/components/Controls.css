@@ -163,3 +163,37 @@
     border-color: rgba(0, 0, 0, 0.1);
     background: rgba(0, 0, 0, 0.03);
 }
+
+@media (max-width: 768px) {
+    .controls {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+    }
+
+    .difficulty-btn {
+        font-size: 0.75rem;
+        padding: 8px 10px;
+    }
+
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .action-btn {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+        font-size: 0.76rem;
+        padding: 9px 10px;
+    }
+
+    .hint-output {
+        min-height: 34px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .action-btn {
+        flex-basis: 100%;
+    }
+}

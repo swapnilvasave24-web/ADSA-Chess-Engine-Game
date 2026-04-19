@@ -81,3 +81,21 @@
 .black-move {
     color: var(--text-secondary);
 }
+
+@media (max-width: 768px) {
+    .move-history {
+        padding: var(--space-sm);
+        min-height: 160px;
+        max-height: 280px;
+    }
+
+    .move-history-header {
+        font-size: 0.76rem;
+    }
+
+    .move-pair {
+        grid-template-columns: 28px 1fr 1fr;
+        font-size: 0.78rem;
+        padding: 6px 8px;
+    }
+}

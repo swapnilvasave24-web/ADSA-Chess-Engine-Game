@@ -252,6 +252,21 @@
 /* Responsive */
 @media (max-width: 768px) {
     .chessboard {
-        width: min(95vw, 480px);
+        width: min(calc(100vw - 76px), 430px);
+    }
+
+    .piece,
+    .animated-piece {
+        font-size: clamp(24px, 7vw, 42px);
+    }
+}
+
+@media (max-width: 520px) {
+    .chessboard {
+        width: min(calc(100vw - 60px), 390px);
+    }
+
+    .capture-ring {
+        border-width: 4px;
     }
 }

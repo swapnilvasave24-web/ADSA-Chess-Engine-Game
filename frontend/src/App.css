@@ -413,16 +413,116 @@
 
 }
 
+@media (max-width: 1024px) {
+  .app-main {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+  }
+
+  .board-area {
+    order: 1;
+    width: 100%;
+  }
+
+  .panel-left {
+    order: 2;
+  }
+
+  .panel-right {
+    order: 3;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .app-header {
     padding: var(--space-sm) var(--space-md);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .account-chip {
+    width: 100%;
+    justify-content: center;
+    order: 3;
   }
 
   .logo h1 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+  }
+
+  .learn-toggle,
+  .multi-toggle,
+  .logout-button {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+  }
+
+  .theme-toggle,
+  .sound-toggle {
+    width: 34px;
+    height: 34px;
+    font-size: 1rem;
   }
 
   .app-main {
-    gap: var(--space-md);
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+
+  .board-with-eval {
+    gap: 6px;
+  }
+
+  .player-tag {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+  }
+
+  .kbd-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    padding: 0 6px;
+  }
+
+  .app-footer {
+    padding: 10px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .account-chip {
+    display: none;
+  }
+
+  .header-right {
+    justify-content: center;
+  }
+
+  .learn-toggle,
+  .multi-toggle,
+  .logout-button {
+    font-size: 0.74rem;
+    padding: 0 8px;
+  }
+
+  .connection-error {
+    width: calc(100% - 24px);
+    padding: var(--space-lg);
   }
 }

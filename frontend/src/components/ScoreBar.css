@@ -56,8 +56,18 @@
 
 @media (max-width: 768px) {
     .score-bar {
-        height: 352px;
-        /* 8 * 44px */
-        width: 22px;
+        height: min(calc(100vw - 76px), 430px);
+        width: 20px;
+    }
+}
+
+@media (max-width: 520px) {
+    .score-bar {
+        height: min(calc(100vw - 60px), 390px);
+        width: 18px;
+    }
+
+    .eval-text {
+        font-size: 0.58rem;
     }
 }
