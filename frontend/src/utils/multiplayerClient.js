@@ -17,66 +17,83 @@ class MultiplayerClient {
   }
 
   connect(serverUrl) {
-    return new Promise((resolve, reject) => {
-      try {
-        const candidates = this.getWebSocketCandidates(serverUrl);
-        const connectNext = (index) => {
-          if (index >= candidates.length) {
-            reject(new Error('Unable to connect to multiplayer server'));
-            return;
+    const candidates = this.getWebSocketCandidates(serverUrl);
+
+    const connectOnce = (url) => new Promise((resolve, reject) => {
+      let settled = false;
+      const ws = new WebSocket(url);
+
+      const timeout = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        try { ws.close(); } catch {}
+        reject(new Error(`WebSocket connection timed out for ${url}`));
+      }, 7000);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        ws.onopen = null;
+        ws.onerror = null;
+      };
+
+      ws.onopen = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+
+        this.ws = ws;
+        this.connected = true;
+        console.log('Connected to multiplayer server');
+
+        this.ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            this.handleMessage(message);
+          } catch (err) {
+            console.error('Failed to parse message:', err);
           }
-
-          const resolvedUrl = candidates[index];
-          this.ws = new WebSocket(resolvedUrl);
-
-          const cleanup = () => {
-            if (!this.ws) return;
-            this.ws.onopen = null;
-            this.ws.onerror = null;
-            this.ws.onmessage = null;
-            this.ws.onclose = null;
-          };
-
-          this.ws.onopen = () => {
-            cleanup();
-            this.connected = true;
-            console.log('Connected to multiplayer server');
-            resolve();
-          };
-
-          this.ws.onmessage = (event) => {
-            try {
-              const message = JSON.parse(event.data);
-              this.handleMessage(message);
-            } catch (err) {
-              console.error('Failed to parse message:', err);
-            }
-          };
-
-          this.ws.onerror = () => {
-            cleanup();
-            try {
-              this.ws.close();
-            } catch {}
-
-            if (index + 1 < candidates.length) {
-              connectNext(index + 1);
-              return;
-            }
-
-            reject(new Error(`WebSocket connection failed for ${resolvedUrl}`));
-          };
-
-          this.ws.onclose = () => {
-            this.connected = false;
-            console.log('Disconnected from multiplayer server');
-          };
         };
 
-        connectNext(0);
-      } catch (err) {
-        reject(err);
-      }
+        this.ws.onclose = () => {
+          this.connected = false;
+          console.log('Disconnected from multiplayer server');
+        };
+
+        resolve();
+      };
+
+      ws.onerror = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        try { ws.close(); } catch {}
+        reject(new Error(`WebSocket connection failed for ${url}`));
+      };
+    });
+
+    return new Promise((resolve, reject) => {
+      let attempt = 0;
+      const maxAttempts = Math.max(6, candidates.length * 3);
+      let lastError = null;
+
+      const tryNext = () => {
+        if (attempt >= maxAttempts) {
+          reject(lastError || new Error('Unable to connect to multiplayer server'));
+          return;
+        }
+
+        const url = candidates[attempt % candidates.length];
+        attempt++;
+
+        connectOnce(url)
+          .then(resolve)
+          .catch((err) => {
+            lastError = err;
+            setTimeout(tryNext, 1200);
+          });
+      };
+
+      tryNext();
     });
   }
 

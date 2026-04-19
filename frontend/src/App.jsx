@@ -196,7 +196,7 @@ export default function App() {
       );
       setIsCreating(false);
       setIsJoining(false);
-    }, 12000);
+    }, 45000);
   }, [clearMultiplayerActionTimeout]);
 
   const toggleLessonComplete = useCallback((lessonId) => {
