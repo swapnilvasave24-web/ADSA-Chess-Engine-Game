@@ -136,6 +136,7 @@ export default function App() {
   const [multiplayerError, setMultiplayerError] = useState('');
 
   const multiplayerRef = useRef(null);
+  const multiplayerActionTimeoutRef = useRef(null);
 
   const currentPlayerColor = isMultiplayer ? multiplayerColor : 'white';
 
@@ -178,6 +179,25 @@ export default function App() {
   const persistLessonProgress = useCallback((nextSet) => {
     window.localStorage.setItem(LESSON_PROGRESS_KEY, JSON.stringify([...nextSet]));
   }, []);
+
+  const clearMultiplayerActionTimeout = useCallback(() => {
+    if (multiplayerActionTimeoutRef.current) {
+      clearTimeout(multiplayerActionTimeoutRef.current);
+      multiplayerActionTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startMultiplayerActionTimeout = useCallback((actionLabel, resetState) => {
+    clearMultiplayerActionTimeout();
+    multiplayerActionTimeoutRef.current = setTimeout(() => {
+      resetState?.();
+      setMultiplayerError(
+        `${actionLabel} timed out. Check that VITE_WS_URL or VITE_API_BASE_URL points to your deployed backend.`,
+      );
+      setIsCreating(false);
+      setIsJoining(false);
+    }, 12000);
+  }, [clearMultiplayerActionTimeout]);
 
   const toggleLessonComplete = useCallback((lessonId) => {
     setCompletedLessons((prev) => {
@@ -485,6 +505,7 @@ export default function App() {
     const client = new MultiplayerClient(
       (event) => {
         if (event.type === 'game_created') {
+          clearMultiplayerActionTimeout();
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
           setCreatedGameId(event.gameId || '');
@@ -498,6 +519,7 @@ export default function App() {
         }
 
         if (event.type === 'game_joined') {
+          clearMultiplayerActionTimeout();
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
           setMultiplayerColor(event.playerColor || 'white');
@@ -533,6 +555,9 @@ export default function App() {
       setIsCreating(true);
       setMultiplayerError('');
       await ensureMultiplayerConnection();
+      startMultiplayerActionTimeout('Creating game', () => {
+        setCreatedGameId('');
+      });
       multiplayerRef.current.createGame(playerName);
     } catch (err) {
       console.error('Failed to create game:', err);
@@ -546,6 +571,7 @@ export default function App() {
       setIsJoining(true);
       setMultiplayerError('');
       await ensureMultiplayerConnection();
+      startMultiplayerActionTimeout('Joining game');
       multiplayerRef.current.joinGame(gameId, playerName);
     } catch (err) {
       console.error('Failed to join game:', err);
@@ -555,6 +581,7 @@ export default function App() {
   };
 
   const leaveMultiplayer = () => {
+    clearMultiplayerActionTimeout();
     multiplayerRef.current?.disconnect();
     multiplayerRef.current = null;
     setIsMultiplayer(false);
@@ -568,6 +595,10 @@ export default function App() {
     setMultiplayerError('');
     initGame();
   };
+
+  useEffect(() => {
+    return () => clearMultiplayerActionTimeout();
+  }, [clearMultiplayerActionTimeout]);
 
   const handleLogout = () => {
     clearSession();
