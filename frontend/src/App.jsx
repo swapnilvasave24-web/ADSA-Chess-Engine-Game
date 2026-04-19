@@ -137,6 +137,7 @@ export default function App() {
 
   const multiplayerRef = useRef(null);
   const multiplayerActionTimeoutRef = useRef(null);
+  const boardRef = useRef(board);
 
   const currentPlayerColor = isMultiplayer ? multiplayerColor : 'white';
   const effectiveIsFlipped = isMultiplayer ? multiplayerColor === 'black' : isFlipped;
@@ -249,6 +250,10 @@ export default function App() {
   }, [authUser, initGame]);
 
   useEffect(() => {
+    boardRef.current = board;
+  }, [board]);
+
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     soundManager.setTheme?.(theme);
   }, [theme]);
@@ -261,7 +266,6 @@ export default function App() {
     if (disabledActions) return;
     if (selectedSquare) return;
     if (isMultiplayer) return;
-    if (isMultiplayer && sideToMove !== multiplayerColor) return;
 
     const { row, col } = squareToCoords(square);
     const piece = board[row]?.[col];
@@ -436,7 +440,7 @@ export default function App() {
   };
 
   const handleHint = async () => {
-    if (disabledActions || sideToMove !== 'white') return;
+    if (isMultiplayer || disabledActions || sideToMove !== 'white') return;
     setHintLoading(true);
     try {
       const result = await getHintMove(difficulty);
@@ -564,7 +568,7 @@ export default function App() {
         if (event.type === 'move') {
           const move = event.move;
           const from = squareToCoords(move.slice(0, 2));
-          const piece = board[from.row]?.[from.col] || 'P';
+          const piece = boardRef.current?.[from.row]?.[from.col] || 'P';
           runMoveAnimation(move, piece, false);
           updateStateFromResponse(event.state);
           setLastMove(move);
@@ -588,6 +592,13 @@ export default function App() {
         setMultiplayerError(errorMessage || 'Multiplayer error');
         setIsCreating(false);
         setIsJoining(false);
+        setChatMessages((prev) => [...prev, {
+          playerId: 'system',
+          playerName: 'System',
+          text: errorMessage || 'Multiplayer error',
+          timestamp: Date.now(),
+        }]);
+        soundManager.illegalMoveSound();
       }
     );
 
@@ -639,6 +650,14 @@ export default function App() {
     setCreatedGameId('');
     setMultiplayerError('');
     initGame();
+  };
+
+  const handlePrimaryGameAction = async () => {
+    if (isMultiplayer) {
+      leaveMultiplayer();
+      return;
+    }
+    await initGame();
   };
 
   useEffect(() => {
@@ -734,7 +753,7 @@ export default function App() {
           <>
             <div className="panel panel-left">
               <Controls
-                onNewGame={initGame}
+                onNewGame={handlePrimaryGameAction}
                 onUndo={handleUndo}
                 onHint={handleHint}
                 onFlip={() => setIsFlipped((prev) => !prev)}
@@ -745,6 +764,7 @@ export default function App() {
                 isThinking={isThinking}
                 hintMove={hintMove}
                 hintLoading={hintLoading}
+                isMultiplayer={isMultiplayer}
               />
               <PerformanceMetrics metrics={metrics} />
             </div>
