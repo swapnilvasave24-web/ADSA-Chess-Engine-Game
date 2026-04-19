@@ -323,6 +323,66 @@
   gap: 6px;
 }
 
+[data-theme="light"] .learn-tab {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .section-progress-item {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .section-progress-item.active {
+  border-color: rgba(108, 92, 231, 0.45);
+  background: rgba(108, 92, 231, 0.12);
+}
+
+[data-theme="light"] .progress-item-head strong {
+  color: #8a6200;
+}
+
+[data-theme="light"] .dot {
+  background: rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .flashcard-face {
+  background:
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    linear-gradient(135deg, rgba(108, 92, 231, 0.55), rgba(253, 203, 110, 0.6)) border-box;
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .front-piece-icon,
+[data-theme="light"] .notation-symbol,
+[data-theme="light"] .rule-visual,
+[data-theme="light"] .card-front-piece h3,
+[data-theme="light"] .card-front-notation h3,
+[data-theme="light"] .card-front-history h3,
+[data-theme="light"] .card-front-rule h3,
+[data-theme="light"] .card-back-content h4 {
+  color: #1f2438;
+  text-shadow: none;
+}
+
+[data-theme="light"] .card-front-piece strong,
+[data-theme="light"] .notation-symbol,
+[data-theme="light"] .card-front-history strong,
+[data-theme="light"] .rule-chip {
+  color: #7a5600;
+}
+
+[data-theme="light"] .rule-chip {
+  border-color: rgba(122, 86, 0, 0.35);
+  background: rgba(253, 203, 110, 0.2);
+}
+
+[data-theme="light"] .card-back-content p,
+[data-theme="light"] .card-back-content li {
+  color: #3d4257;
+}
+
 @media (max-width: 1280px) {
   .flashcard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
