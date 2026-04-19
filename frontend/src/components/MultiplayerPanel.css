@@ -243,3 +243,71 @@
   opacity: 0.9;
   transform: translateY(-1px);
 }
+
+[data-theme="light"] .multiplayer-header {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .game-info-section {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .game-id-display {
+  background: rgba(70, 130, 255, 0.12);
+  border-color: rgba(70, 130, 255, 0.35);
+}
+
+[data-theme="light"] .game-id-value {
+  color: #165ba6;
+}
+
+[data-theme="light"] .copy-icon-btn {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.14);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .copy-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.22);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .status-badge {
+  background: rgba(0, 184, 148, 0.18);
+  color: #0d6f5c;
+}
+
+[data-theme="light"] .status-badge.disconnected {
+  background: rgba(225, 112, 85, 0.2);
+  color: #9d3d28;
+}
+
+[data-theme="light"] .color-badge {
+  background: rgba(253, 203, 110, 0.28);
+  color: #7a5600;
+}
+
+[data-theme="light"] .chat-list {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .msg-player {
+  color: #0f8a4b;
+}
+
+[data-theme="light"] .chat-input-row input {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .chat-input-row input:focus {
+  background: rgba(108, 92, 231, 0.08);
+  border-color: rgba(108, 92, 231, 0.4);
+}
+
+[data-theme="light"] .chat-input-row button {
+  color: #ffffff;
+}

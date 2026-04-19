@@ -159,6 +159,17 @@
   transform: scale(1.1);
 }
 
+[data-theme="light"] .theme-toggle,
+[data-theme="light"] .sound-toggle {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .theme-toggle:hover,
+[data-theme="light"] .sound-toggle:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .multi-toggle {
   height: 36px;
   border-radius: 18px;
@@ -211,6 +222,15 @@
 
 .logout-button:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="light"] .logout-button {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .logout-button:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 /* Main Layout */
@@ -271,6 +291,10 @@
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   width: fit-content;
+}
+
+[data-theme="light"] .player-tag {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .player-dot {
@@ -351,6 +375,10 @@
   font-size: 0.85rem;
   color: var(--accent-secondary);
   margin-bottom: var(--space-lg);
+}
+
+[data-theme="light"] .connection-error code {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .retry-btn {

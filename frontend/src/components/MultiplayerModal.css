@@ -288,6 +288,30 @@
   line-height: 1.35;
 }
 
+[data-theme="light"] .modal-overlay {
+  background: rgba(20, 24, 35, 0.35);
+}
+
+[data-theme="light"] .cancel-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.14);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .share-hint code {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .modal-error {
+  border-color: rgba(225, 112, 85, 0.35);
+  background: rgba(225, 112, 85, 0.14);
+  color: #8f3320;
+}
+
 @media (max-width: 768px) {
   .modal-content {
     padding: var(--space-lg);

@@ -99,6 +99,40 @@
   min-width: fit-content;
 }
 
+[data-theme="light"] .captured-pieces-container {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .captures-area {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .captures-label {
+  color: #5e6275;
+}
+
+[data-theme="light"] .captures-label.white-label,
+[data-theme="light"] .captures-label.black-label {
+  color: #42475d;
+}
+
+[data-theme="light"] .captured-pieces {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .no-captures {
+  color: #7e8398;
+}
+
+[data-theme="light"] .material-value {
+  color: #7a5600;
+  background: rgba(253, 203, 110, 0.2);
+  border-color: rgba(253, 203, 110, 0.35);
+}
+
 /* Responsive styling */
 @media (max-width: 768px) {
   .captured-pieces-container {
