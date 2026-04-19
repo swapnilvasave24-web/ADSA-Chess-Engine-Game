@@ -15,6 +15,8 @@ class MultiplayerClient {
     this.onPlayerJoined = onPlayerJoined;
     this.onPlayerLeft = onPlayerLeft;
     this.onError = onError;
+    this.pendingLegalMoveRequests = new Map();
+    this.requestSeq = 0;
   }
 
   connect(serverUrl) {
@@ -57,6 +59,11 @@ class MultiplayerClient {
 
         this.ws.onclose = () => {
           this.connected = false;
+          for (const pending of this.pendingLegalMoveRequests.values()) {
+            pending.reject(new Error('Multiplayer connection closed'));
+            clearTimeout(pending.timeoutId);
+          }
+          this.pendingLegalMoveRequests.clear();
           console.log('Disconnected from multiplayer server');
         };
 
@@ -206,8 +213,26 @@ class MultiplayerClient {
 
       case 'error':
         console.error('Server error:', payload.error);
+        if (payload.requestId && this.pendingLegalMoveRequests.has(payload.requestId)) {
+          const pending = this.pendingLegalMoveRequests.get(payload.requestId);
+          clearTimeout(pending.timeoutId);
+          pending.reject(new Error(payload.error || 'Multiplayer request failed'));
+          this.pendingLegalMoveRequests.delete(payload.requestId);
+          return;
+        }
         this.onError?.(payload.error || 'Multiplayer server error');
         break;
+
+      case 'legal_moves': {
+        const requestId = payload?.requestId;
+        if (requestId && this.pendingLegalMoveRequests.has(requestId)) {
+          const pending = this.pendingLegalMoveRequests.get(requestId);
+          clearTimeout(pending.timeoutId);
+          pending.resolve(payload.moves || []);
+          this.pendingLegalMoveRequests.delete(requestId);
+        }
+        break;
+      }
 
       default:
         console.warn('Unknown message type:', type);
@@ -262,6 +287,31 @@ class MultiplayerClient {
       gameId: this.gameId,
       playerId: this.playerId,
       text: text
+    });
+  }
+
+  getLegalMoves(square = '') {
+    if (!this.connected || !this.ws) {
+      return Promise.reject(new Error('WebSocket not connected'));
+    }
+
+    const requestId = `lm_${Date.now()}_${++this.requestSeq}`;
+
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        this.pendingLegalMoveRequests.delete(requestId);
+        reject(new Error('Timed out while fetching legal moves'));
+      }, 5000);
+
+      this.pendingLegalMoveRequests.set(requestId, { resolve, reject, timeoutId });
+
+      this.send({
+        type: 'get_legal_moves',
+        gameId: this.gameId,
+        playerId: this.playerId,
+        square,
+        requestId,
+      });
     });
   }
 

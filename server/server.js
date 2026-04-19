@@ -380,6 +380,40 @@ wss.on('connection', (ws) => {
         return;
       }
 
+      if (message.type === 'get_legal_moves') {
+        const room = rooms.get((message.gameId || '').toUpperCase());
+        if (!room) {
+          sendJson(ws, { type: 'error', payload: { error: 'Game not found', requestId: message.requestId || null } });
+          return;
+        }
+
+        const player = getPlayer(room, message.playerId);
+        if (!player) {
+          sendJson(ws, { type: 'error', payload: { error: 'Player not in game', requestId: message.requestId || null } });
+          return;
+        }
+
+        const square = typeof message.square === 'string' ? message.square : '';
+        const result = await room.engine.getLegalMoves(square);
+        if (result.status !== 'ok') {
+          sendJson(ws, {
+            type: 'error',
+            payload: { error: result.message || 'Failed to get legal moves', requestId: message.requestId || null },
+          });
+          return;
+        }
+
+        sendJson(ws, {
+          type: 'legal_moves',
+          payload: {
+            requestId: message.requestId || null,
+            square,
+            moves: result.moves || [],
+          },
+        });
+        return;
+      }
+
       if (message.type === 'chat') {
         const room = rooms.get((message.gameId || '').toUpperCase());
         if (!room) return;
