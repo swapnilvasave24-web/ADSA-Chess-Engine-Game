@@ -44,6 +44,7 @@ const coordsToSquare = (row, col) => String.fromCharCode(97 + col) + (row + 1);
 
 const isWhitePiece = (piece) => typeof piece === 'string' && piece >= 'A' && piece <= 'Z';
 const isBlackPiece = (piece) => typeof piece === 'string' && piece >= 'a' && piece <= 'z';
+const normalizeColor = (value) => (typeof value === 'string' ? value.trim().toLowerCase() : '');
 
 // Calculate captured pieces by comparing initial board with current board
 const calculateCapturedPieces = (initialBoard, currentBoard) => {
@@ -139,13 +140,15 @@ export default function App() {
   const multiplayerActionTimeoutRef = useRef(null);
   const boardRef = useRef(board);
 
-  const currentPlayerColor = isMultiplayer ? multiplayerColor : 'white';
-  const effectiveIsFlipped = isMultiplayer ? multiplayerColor === 'black' : isFlipped;
-  const opponentColor = multiplayerColor === 'white' ? 'black' : 'white';
+  const normalizedMultiplayerColor = normalizeColor(multiplayerColor);
+  const normalizedSideToMove = normalizeColor(sideToMove);
+  const currentPlayerColor = isMultiplayer ? normalizedMultiplayerColor : 'white';
+  const effectiveIsFlipped = isMultiplayer ? normalizedMultiplayerColor === 'black' : isFlipped;
+  const opponentColor = normalizedMultiplayerColor === 'white' ? 'black' : 'white';
 
   const updateStateFromResponse = useCallback((data) => {
     if (data.board) setBoard(data.board);
-    if (data.sideToMove) setSideToMove(data.sideToMove);
+    if (data.sideToMove) setSideToMove(normalizeColor(data.sideToMove));
     if (typeof data.inCheck === 'boolean') setInCheck(data.inCheck);
     if (data.gameStatus) setGameStatus(data.gameStatus);
     if (typeof data.evaluation === 'number') setEvaluation(data.evaluation);
@@ -265,7 +268,7 @@ export default function App() {
   const handleSquareHover = async (square) => {
     if (disabledActions) return;
     if (selectedSquare) return;
-    if (isMultiplayer && sideToMove !== multiplayerColor) return;
+    if (isMultiplayer && normalizedSideToMove !== normalizedMultiplayerColor) return;
 
     const { row, col } = squareToCoords(square);
     const piece = board[row]?.[col];
@@ -321,7 +324,7 @@ export default function App() {
 
   const handlePlayerMove = useCallback(async (from, to) => {
     if (disabledActions) return;
-    if (isMultiplayer && sideToMove !== multiplayerColor) return;
+    if (isMultiplayer && normalizedSideToMove !== normalizedMultiplayerColor) return;
 
     const fromCoords = squareToCoords(from);
     const toCoords = squareToCoords(to);
@@ -389,8 +392,8 @@ export default function App() {
     disabledActions,
     isMultiplayer,
     legalMoves,
-    multiplayerColor,
-    sideToMove,
+    normalizedMultiplayerColor,
+    normalizedSideToMove,
   ]);
 
   const handleSquareClick = useCallback(async (square) => {
@@ -412,7 +415,7 @@ export default function App() {
     const piece = board[row]?.[col];
 
     const isOwnPiece = currentPlayerColor === 'white' ? isWhitePiece(piece) : isBlackPiece(piece);
-    const isPlayersTurn = sideToMove === currentPlayerColor;
+    const isPlayersTurn = normalizedSideToMove === currentPlayerColor;
 
     if (piece && isPlayersTurn && isOwnPiece) {
       setSelectedSquare(square);
@@ -422,7 +425,16 @@ export default function App() {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
-  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, currentPlayerColor, handlePlayerMove, isMultiplayer]);
+  }, [
+    disabledActions,
+    selectedSquare,
+    legalMoves,
+    board,
+    normalizedSideToMove,
+    currentPlayerColor,
+    handlePlayerMove,
+    requestSquareMoves,
+  ]);
 
   const handlePieceDrop = useCallback(async (from, to) => {
     await handlePlayerMove(from, to);
@@ -457,8 +469,9 @@ export default function App() {
 
   const canMoveForMultiplayer = useMemo(() => {
     if (!isMultiplayer) return true;
-    return sideToMove === multiplayerColor;
-  }, [isMultiplayer, sideToMove, multiplayerColor]);
+    if (!multiplayerConnected) return false;
+    return normalizedSideToMove === normalizedMultiplayerColor;
+  }, [isMultiplayer, multiplayerConnected, normalizedSideToMove, normalizedMultiplayerColor]);
 
   const { whiteCaptured, blackCaptured } = useMemo(() => {
     return calculateCapturedPieces(INITIAL_BOARD, board);
@@ -532,7 +545,7 @@ export default function App() {
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
           setCreatedGameId(event.gameId || '');
-          setMultiplayerColor(event.playerColor || 'white');
+          setMultiplayerColor(normalizeColor(event.playerColor) || 'white');
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
           setMultiplayerError('');
@@ -553,7 +566,7 @@ export default function App() {
           clearMultiplayerActionTimeout();
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
-          setMultiplayerColor(event.playerColor || 'black');
+          setMultiplayerColor(normalizeColor(event.playerColor) || 'black');
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
           setMultiplayerError('');
@@ -577,6 +590,9 @@ export default function App() {
           runMoveAnimation(move, piece, false);
           updateStateFromResponse(event.state);
           setLastMove(move);
+          setSelectedSquare(null);
+          setLegalMoves([]);
+          setHoverLegalMoves([]);
           return;
         }
       },
