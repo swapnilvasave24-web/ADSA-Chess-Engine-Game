@@ -6,6 +6,48 @@
   min-width: 0;
 }
 
+.learn-page-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+}
+
+.learn-page-kicker {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.learn-page-top h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.learn-back-btn {
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(253, 203, 110, 0.38);
+  background: rgba(253, 203, 110, 0.14);
+  color: var(--text-primary);
+  padding: 0 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.learn-back-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(253, 203, 110, 0.22);
+  border-color: rgba(253, 203, 110, 0.55);
+}
+
 .learn-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -295,6 +337,11 @@
 }
 
 @media (max-width: 768px) {
+  .learn-page-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .flashcard-grid,
   .learn-tabs,
   .section-progress {

@@ -257,7 +257,7 @@ function SectionProgress({ activeSection, seenBySection }) {
   );
 }
 
-export default function LearnChessPage() {
+export default function LearnChessPage({ onBackToPlay }) {
   const [activeSection, setActiveSection] = useState('pieces');
   const [seenBySection, setSeenBySection] = useState({
     pieces: new Set(),
@@ -278,6 +278,16 @@ export default function LearnChessPage() {
 
   return (
     <div className="learn-page">
+      <div className="learn-page-top glass">
+        <div>
+          <p className="learn-page-kicker">Training Mode</p>
+          <h2>Learn chess, then jump back into play anytime.</h2>
+        </div>
+        <button type="button" className="learn-back-btn" onClick={onBackToPlay}>
+          ← Back to Play
+        </button>
+      </div>
+
       <nav className="learn-tabs" aria-label="Learn Chess sections">
         {TABS.map((tab) => (
           <button

@@ -188,6 +188,16 @@ export default function App() {
     });
   }, [persistLessonProgress]);
 
+  const handleViewChange = useCallback((nextView) => {
+    setCurrentView(nextView);
+    setShowMultiplayerModal(false);
+  }, []);
+
+  const handleBackToPlay = useCallback(() => {
+    setCurrentView('play');
+    setShowMultiplayerModal(false);
+  }, []);
+
   const initGame = useCallback(async (fen = null) => {
     try {
       const result = await newGame(fen);
@@ -615,7 +625,7 @@ export default function App() {
           </button>
           <button
             className={`learn-toggle ${currentView === 'learn' ? 'active' : ''}`}
-            onClick={() => setCurrentView('learn')}
+            onClick={() => handleViewChange('learn')}
           >
             🎓 Learn Chess
           </button>
@@ -633,6 +643,7 @@ export default function App() {
           <LearnChessPage
             completedLessons={completedLessons}
             onToggleLessonComplete={toggleLessonComplete}
+            onBackToPlay={handleBackToPlay}
           />
         ) : (
           <>
