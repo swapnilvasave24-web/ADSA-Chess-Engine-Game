@@ -12,7 +12,8 @@ export default function MultiplayerModal({
   onJoinGame,
   createdGameId = null,
   isCreating = false,
-  isJoining = false
+  isJoining = false,
+  errorMessage = '',
 }) {
   const [mode, setMode] = useState(null); // 'create', 'join', 'waiting', or null
   const [playerName, setPlayerName] = useState('');
@@ -159,6 +160,7 @@ export default function MultiplayerModal({
               disabled={isJoining}
             />
             <p className="join-hint">Your friend will give you a Game ID to paste here.</p>
+            {errorMessage && <div className="modal-error">{errorMessage}</div>}
             <div className="modal-buttons">
               <button className="modal-btn confirm-btn" onClick={handleJoinGame} disabled={!playerName.trim() || !gameId.trim() || isJoining}>
                 {isJoining ? 'Joining...' : 'Join Game'}

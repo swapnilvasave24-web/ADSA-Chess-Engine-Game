@@ -19,37 +19,94 @@ class MultiplayerClient {
   connect(serverUrl) {
     return new Promise((resolve, reject) => {
       try {
-        const resolvedUrl = serverUrl || this.getDefaultWebSocketUrl();
-        this.ws = new WebSocket(resolvedUrl);
-
-        this.ws.onopen = () => {
-          this.connected = true;
-          console.log('Connected to multiplayer server');
-          resolve();
-        };
-
-        this.ws.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            this.handleMessage(message);
-          } catch (err) {
-            console.error('Failed to parse message:', err);
+        const candidates = this.getWebSocketCandidates(serverUrl);
+        const connectNext = (index) => {
+          if (index >= candidates.length) {
+            reject(new Error('Unable to connect to multiplayer server'));
+            return;
           }
+
+          const resolvedUrl = candidates[index];
+          this.ws = new WebSocket(resolvedUrl);
+
+          const cleanup = () => {
+            if (!this.ws) return;
+            this.ws.onopen = null;
+            this.ws.onerror = null;
+            this.ws.onmessage = null;
+            this.ws.onclose = null;
+          };
+
+          this.ws.onopen = () => {
+            cleanup();
+            this.connected = true;
+            console.log('Connected to multiplayer server');
+            resolve();
+          };
+
+          this.ws.onmessage = (event) => {
+            try {
+              const message = JSON.parse(event.data);
+              this.handleMessage(message);
+            } catch (err) {
+              console.error('Failed to parse message:', err);
+            }
+          };
+
+          this.ws.onerror = () => {
+            cleanup();
+            try {
+              this.ws.close();
+            } catch {}
+
+            if (index + 1 < candidates.length) {
+              connectNext(index + 1);
+              return;
+            }
+
+            reject(new Error(`WebSocket connection failed for ${resolvedUrl}`));
+          };
+
+          this.ws.onclose = () => {
+            this.connected = false;
+            console.log('Disconnected from multiplayer server');
+          };
         };
 
-        this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          reject(error);
-        };
-
-        this.ws.onclose = () => {
-          this.connected = false;
-          console.log('Disconnected from multiplayer server');
-        };
+        connectNext(0);
       } catch (err) {
         reject(err);
       }
     });
+  }
+
+  getWebSocketCandidates(serverUrl) {
+    const candidates = [];
+
+    if (serverUrl) {
+      candidates.push(serverUrl);
+    }
+
+    const wsBase = import.meta.env.VITE_WS_URL;
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+
+    if (wsBase) {
+      candidates.push(wsBase);
+    }
+
+    if (apiBase && /^https?:\/\//.test(apiBase)) {
+      candidates.push(
+        apiBase
+          .replace(/^http:/, 'ws:')
+          .replace(/^https:/, 'wss:')
+          .replace(/\/api\/?$/, ''),
+      );
+    }
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    candidates.push(`${protocol}//${window.location.host}`);
+
+    return [...new Set(candidates.filter(Boolean))];
   }
 
   getDefaultWebSocketUrl() {

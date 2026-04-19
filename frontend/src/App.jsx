@@ -133,6 +133,7 @@ export default function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [createdGameId, setCreatedGameId] = useState('');
+  const [multiplayerError, setMultiplayerError] = useState('');
 
   const multiplayerRef = useRef(null);
 
@@ -490,6 +491,7 @@ export default function App() {
           setMultiplayerColor(event.playerColor || 'white');
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
+          setMultiplayerError('');
           if (event.state) updateStateFromResponse(event.state);
           setIsCreating(false);
           return;
@@ -501,6 +503,7 @@ export default function App() {
           setMultiplayerColor(event.playerColor || 'white');
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
+          setMultiplayerError('');
           if (event.state) updateStateFromResponse(event.state);
           setIsJoining(false);
           return;
@@ -528,10 +531,12 @@ export default function App() {
   const createMultiplayerGame = async (playerName) => {
     try {
       setIsCreating(true);
+      setMultiplayerError('');
       await ensureMultiplayerConnection();
       multiplayerRef.current.createGame(playerName);
     } catch (err) {
       console.error('Failed to create game:', err);
+      setMultiplayerError(err.message || 'Could not start multiplayer. Check the server connection.');
       setIsCreating(false);
     }
   };
@@ -539,10 +544,12 @@ export default function App() {
   const joinMultiplayerGame = async (gameId, playerName) => {
     try {
       setIsJoining(true);
+      setMultiplayerError('');
       await ensureMultiplayerConnection();
       multiplayerRef.current.joinGame(gameId, playerName);
     } catch (err) {
       console.error('Failed to join game:', err);
+      setMultiplayerError(err.message || 'Could not join multiplayer. Check the game ID and server connection.');
       setIsJoining(false);
     }
   };
@@ -558,6 +565,7 @@ export default function App() {
     setIsCreating(false);
     setIsJoining(false);
     setCreatedGameId('');
+    setMultiplayerError('');
     initGame();
   };
 
@@ -735,6 +743,7 @@ export default function App() {
           createdGameId={createdGameId}
           isCreating={isCreating}
           isJoining={isJoining}
+          errorMessage={multiplayerError}
         />
       )}
     </div>

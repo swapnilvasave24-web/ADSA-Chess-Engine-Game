@@ -278,6 +278,16 @@
   margin-top: -8px;
 }
 
+.modal-error {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  background: rgba(255, 107, 107, 0.12);
+  color: #ffb3b3;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
 @media (max-width: 768px) {
   .modal-content {
     padding: var(--space-lg);
