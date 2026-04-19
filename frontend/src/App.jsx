@@ -139,6 +139,8 @@ export default function App() {
   const multiplayerActionTimeoutRef = useRef(null);
 
   const currentPlayerColor = isMultiplayer ? multiplayerColor : 'white';
+  const effectiveIsFlipped = isMultiplayer ? multiplayerColor === 'black' : isFlipped;
+  const opponentColor = multiplayerColor === 'white' ? 'black' : 'white';
 
   const updateStateFromResponse = useCallback((data) => {
     if (data.board) setBoard(data.board);
@@ -750,7 +752,7 @@ export default function App() {
             <div className="board-area">
               <div className="player-tag opponent">
                 <span className="player-dot black-dot" />
-                <span>{isMultiplayer ? 'Opponent (Black)' : 'CheckmateAI (Black)'}</span>
+                <span>{isMultiplayer ? `Opponent (${opponentColor === 'white' ? 'White' : 'Black'})` : 'CheckmateAI (Black)'}</span>
                 {isThinking && <span className="thinking-indicator">Thinking...</span>}
               </div>
 
@@ -765,7 +767,7 @@ export default function App() {
                   lastMove={lastMove}
                   inCheck={inCheck}
                   sideToMove={sideToMove}
-                  isFlipped={isFlipped}
+                  isFlipped={effectiveIsFlipped}
                   onSquareClick={handleSquareClick}
                   onSquareHover={handleSquareHover}
                   onSquareLeave={clearHoverMoves}
@@ -777,7 +779,7 @@ export default function App() {
 
               <div className="player-tag player">
                 <span className="player-dot white-dot" />
-                <span>{isMultiplayer ? 'You' : 'You (White)'}</span>
+                <span>{isMultiplayer ? `You (${multiplayerColor === 'white' ? 'White' : 'Black'})` : 'You (White)'}</span>
               </div>
 
               <div className="kbd-hint">Input: {algebraicInput || '-'} | Keys: arrows navigate, Enter select, Space flip</div>
