@@ -11,7 +11,7 @@ const { WebSocketServer } = require('ws');
 const EngineBridge = require('./engine-bridge');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -40,6 +40,34 @@ const broadcast = (room, message) => {
 
 const getPlayer = (room, playerId) => room?.players.get(playerId);
 
+const normalizeAndValidateMove = (rawMove) => {
+  if (typeof rawMove !== 'string') {
+    return { ok: false, error: 'Move must be a string' };
+  }
+
+  const move = rawMove.trim().toLowerCase();
+  if (!/^[a-h][1-8][a-h][1-8][nbrq]?$/.test(move)) {
+    return { ok: false, error: 'Invalid move format' };
+  }
+
+  const fromRank = move[1];
+  const toRank = move[3];
+  const hasPromotionSuffix = move.length === 5;
+  const isPromotionTravel =
+    (fromRank === '7' && toRank === '8') ||
+    (fromRank === '2' && toRank === '1');
+
+  if (hasPromotionSuffix && !isPromotionTravel) {
+    return { ok: false, error: 'Invalid promotion move' };
+  }
+
+  if (!hasPromotionSuffix && isPromotionTravel) {
+    return { ok: false, error: 'Promotion piece is required' };
+  }
+
+  return { ok: true, move };
+};
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'CheckmateAI server running' });
 });
@@ -59,7 +87,13 @@ app.post('/api/game/move', async (req, res) => {
   try {
     const { move } = req.body;
     if (!move) return res.status(400).json({ status: 'error', message: 'Move required' });
-    const result = await engine.makeMove(move);
+
+    const validated = normalizeAndValidateMove(move);
+    if (!validated.ok) {
+      return res.status(400).json({ status: 'error', message: validated.error });
+    }
+
+    const result = await engine.makeMove(validated.move);
     res.json(result);
   } catch (err) {
     console.error('Error making move:', err);
@@ -215,7 +249,13 @@ wss.on('connection', (ws) => {
           return;
         }
 
-        const result = await room.engine.makeMove(message.move);
+        const validated = normalizeAndValidateMove(message.move);
+        if (!validated.ok) {
+          sendJson(ws, { type: 'error', payload: { error: validated.error } });
+          return;
+        }
+
+        const result = await room.engine.makeMove(validated.move);
         if (result.status !== 'ok') {
           sendJson(ws, { type: 'error', payload: { error: result.message || 'Illegal move' } });
           return;
@@ -224,7 +264,7 @@ wss.on('connection', (ws) => {
         room.state = result;
         broadcast(room, {
           type: 'move',
-          payload: { move: message.move, state: result },
+          payload: { move: validated.move, state: result },
         });
         return;
       }

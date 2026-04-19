@@ -42,6 +42,9 @@ const squareToCoords = (square) => ({
 
 const coordsToSquare = (row, col) => String.fromCharCode(97 + col) + (row + 1);
 
+const isWhitePiece = (piece) => typeof piece === 'string' && piece >= 'A' && piece <= 'Z';
+const isBlackPiece = (piece) => typeof piece === 'string' && piece >= 'a' && piece <= 'z';
+
 // Calculate captured pieces by comparing initial board with current board
 const calculateCapturedPieces = (initialBoard, currentBoard) => {
   const whiteCaptured = [];
@@ -133,6 +136,8 @@ export default function App() {
 
   const multiplayerRef = useRef(null);
 
+  const currentPlayerColor = isMultiplayer ? multiplayerColor : 'white';
+
   const updateStateFromResponse = useCallback((data) => {
     if (data.board) setBoard(data.board);
     if (data.sideToMove) setSideToMove(data.sideToMove);
@@ -222,10 +227,12 @@ export default function App() {
   const handleSquareHover = async (square) => {
     if (disabledActions) return;
     if (selectedSquare) return;
+    if (isMultiplayer && sideToMove !== multiplayerColor) return;
 
     const { row, col } = squareToCoords(square);
     const piece = board[row]?.[col];
-    if (!piece || piece < 'A' || piece > 'Z') {
+    const isOwnPiece = currentPlayerColor === 'white' ? isWhitePiece(piece) : isBlackPiece(piece);
+    if (!piece || !isOwnPiece) {
       setHoverLegalMoves([]);
       return;
     }
@@ -260,14 +267,24 @@ export default function App() {
 
   const handlePlayerMove = useCallback(async (from, to) => {
     if (disabledActions) return;
+    if (isMultiplayer && sideToMove !== multiplayerColor) return;
 
     const fromCoords = squareToCoords(from);
     const toCoords = squareToCoords(to);
     const movedPiece = board[fromCoords.row]?.[fromCoords.col];
     const capturedPiece = board[toCoords.row]?.[toCoords.col];
 
-    let moveStr = from + to;
-    if (movedPiece === 'P' && toCoords.row === 7) moveStr += 'q';
+    const ownPiece = currentPlayerColor === 'white' ? isWhitePiece(movedPiece) : isBlackPiece(movedPiece);
+    if (!ownPiece) return;
+
+    const exactLegalMove = legalMoves.find((m) => m.from === from && m.to === to)?.algebraic;
+
+    let moveStr = exactLegalMove || (from + to);
+    if (!exactLegalMove) {
+      const isWhitePromotion = movedPiece === 'P' && toCoords.row === 7;
+      const isBlackPromotion = movedPiece === 'p' && toCoords.row === 0;
+      if (isWhitePromotion || isBlackPromotion) moveStr += 'q';
+    }
 
     if (isMultiplayer && multiplayerRef.current?.isConnected()) {
       multiplayerRef.current.makeMove(moveStr);
@@ -310,7 +327,17 @@ export default function App() {
       console.error('Error making move:', err);
       soundManager.illegalMoveSound();
     }
-  }, [applyMoveResponse, board, difficulty, disabledActions, isMultiplayer]);
+  }, [
+    applyMoveResponse,
+    board,
+    currentPlayerColor,
+    difficulty,
+    disabledActions,
+    isMultiplayer,
+    legalMoves,
+    multiplayerColor,
+    sideToMove,
+  ]);
 
   const handleSquareClick = useCallback(async (square) => {
     if (disabledActions) return;
@@ -330,7 +357,10 @@ export default function App() {
     const { row, col } = squareToCoords(square);
     const piece = board[row]?.[col];
 
-    if (piece && sideToMove === 'white' && piece >= 'A' && piece <= 'Z') {
+    const isOwnPiece = currentPlayerColor === 'white' ? isWhitePiece(piece) : isBlackPiece(piece);
+    const isPlayersTurn = sideToMove === currentPlayerColor;
+
+    if (piece && isPlayersTurn && isOwnPiece) {
       setSelectedSquare(square);
       setHoverLegalMoves([]);
       await requestSquareMoves(square);
@@ -338,7 +368,7 @@ export default function App() {
       setSelectedSquare(null);
       setLegalMoves([]);
     }
-  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, handlePlayerMove]);
+  }, [disabledActions, selectedSquare, legalMoves, board, sideToMove, currentPlayerColor, handlePlayerMove]);
 
   const handlePieceDrop = useCallback(async (from, to) => {
     await handlePlayerMove(from, to);
