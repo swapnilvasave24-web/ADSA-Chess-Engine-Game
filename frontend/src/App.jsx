@@ -513,6 +513,14 @@ export default function App() {
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
           setMultiplayerError('');
+          setChatMessages([
+            {
+              playerId: 'system',
+              playerName: 'System',
+              text: `Game created. You are White. Share code ${event.gameId}.`,
+              timestamp: Date.now(),
+            },
+          ]);
           if (event.state) updateStateFromResponse(event.state);
           setIsCreating(false);
           return;
@@ -522,10 +530,18 @@ export default function App() {
           clearMultiplayerActionTimeout();
           setMultiplayerConnected(true);
           setMultiplayerGameId(event.gameId || '');
-          setMultiplayerColor(event.playerColor || 'white');
+          setMultiplayerColor(event.playerColor || 'black');
           setIsMultiplayer(true);
           setShowMultiplayerModal(false);
           setMultiplayerError('');
+          setChatMessages([
+            {
+              playerId: 'system',
+              playerName: 'System',
+              text: 'Joined game. You are Black.',
+              timestamp: Date.now(),
+            },
+          ]);
           if (event.state) updateStateFromResponse(event.state);
           setIsJoining(false);
           return;
@@ -542,8 +558,23 @@ export default function App() {
         }
       },
       (msg) => setChatMessages((prev) => [...prev, msg]),
-      () => {},
-      () => {}
+      (payload) => setChatMessages((prev) => [...prev, {
+        playerId: 'system',
+        playerName: 'System',
+        text: `${payload.playerName || 'Opponent'} joined the game.`,
+        timestamp: Date.now(),
+      }]),
+      (payload) => setChatMessages((prev) => [...prev, {
+        playerId: 'system',
+        playerName: 'System',
+        text: `${payload.playerName || 'Opponent'} left the game.`,
+        timestamp: Date.now(),
+      }]),
+      (errorMessage) => {
+        setMultiplayerError(errorMessage || 'Multiplayer error');
+        setIsCreating(false);
+        setIsJoining(false);
+      }
     );
 
     await client.connect();

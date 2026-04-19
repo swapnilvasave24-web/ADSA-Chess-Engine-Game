@@ -328,6 +328,7 @@ wss.on('connection', (ws) => {
           payload: {
             gameId,
             playerId,
+            playerColor: 'black',
             opponentColor: 'white',
             opponentName: host?.playerName || 'Host',
             state: room.state,
@@ -336,7 +337,7 @@ wss.on('connection', (ws) => {
 
         broadcast(room, {
           type: 'player_joined',
-          payload: { playerName },
+          payload: { playerName, playerId, playerColor: 'black' },
         });
         return;
       }

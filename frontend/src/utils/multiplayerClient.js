@@ -4,7 +4,7 @@
  */
 
 class MultiplayerClient {
-  constructor(onGameStateChange, onMessageReceived, onPlayerJoined, onPlayerLeft) {
+  constructor(onGameStateChange, onMessageReceived, onPlayerJoined, onPlayerLeft, onError) {
     this.ws = null;
     this.connected = false;
     this.gameId = null;
@@ -14,6 +14,7 @@ class MultiplayerClient {
     this.onMessageReceived = onMessageReceived;
     this.onPlayerJoined = onPlayerJoined;
     this.onPlayerLeft = onPlayerLeft;
+    this.onError = onError;
   }
 
   connect(serverUrl) {
@@ -173,7 +174,7 @@ class MultiplayerClient {
       case 'game_joined':
         this.gameId = payload.gameId;
         this.playerId = payload.playerId;
-        this.playerColor = payload.opponentColor === 'white' ? 'black' : 'white';
+        this.playerColor = payload.playerColor || (payload.opponentColor === 'white' ? 'black' : 'white');
         this.onGameStateChange?.({
           type: 'game_joined',
           gameId: this.gameId,
@@ -205,6 +206,7 @@ class MultiplayerClient {
 
       case 'error':
         console.error('Server error:', payload.error);
+        this.onError?.(payload.error || 'Multiplayer server error');
         break;
 
       default:

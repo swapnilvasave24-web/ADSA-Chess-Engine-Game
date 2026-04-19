@@ -13,6 +13,7 @@ export default function MultiplayerPanel({
   const [copied, setCopied] = useState(false);
 
   const submit = () => {
+    if (!connected) return;
     const clean = text.trim();
     if (!clean) return;
     onSendMessage(clean);
@@ -89,9 +90,10 @@ export default function MultiplayerPanel({
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type message..."
+            placeholder={connected ? 'Type message...' : 'Connect to chat...'}
+            disabled={!connected}
           />
-          <button onClick={submit} className="send-btn">Send</button>
+          <button onClick={submit} className="send-btn" disabled={!connected || !text.trim()}>Send</button>
         </div>
       </div>
     </div>
