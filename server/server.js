@@ -40,6 +40,9 @@ const broadcast = (room, message) => {
 
 const getPlayer = (room, playerId) => room?.players.get(playerId);
 
+const ALLOWED_PIECES = new Set(['', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k']);
+const ALLOWED_GAME_STATUS = new Set(['ongoing', 'checkmate', 'stalemate', 'draw']);
+
 const normalizeAndValidateMove = (rawMove) => {
   if (typeof rawMove !== 'string') {
     return { ok: false, error: 'Move must be a string' };
@@ -68,6 +71,108 @@ const normalizeAndValidateMove = (rawMove) => {
   return { ok: true, move };
 };
 
+const normalizeAndValidateGameState = (rawState, context) => {
+  if (!rawState || typeof rawState !== 'object') {
+    return { ok: false, error: `${context}: state payload is not an object` };
+  }
+
+  const state = { ...rawState };
+
+  if (!Array.isArray(state.board) || state.board.length !== 8) {
+    return { ok: false, error: `${context}: board must be an 8x8 array` };
+  }
+
+  let whiteKingCount = 0;
+  let blackKingCount = 0;
+  let whitePieceCount = 0;
+  let blackPieceCount = 0;
+
+  const normalizedBoard = state.board.map((row, rowIndex) => {
+    if (!Array.isArray(row) || row.length !== 8) {
+      throw new Error(`${context}: board row ${rowIndex} is not length 8`);
+    }
+
+    return row.map((cell, colIndex) => {
+      const value = cell == null ? '' : String(cell).trim();
+
+      if (!ALLOWED_PIECES.has(value)) {
+        throw new Error(`${context}: invalid piece '${value}' at [${rowIndex},${colIndex}]`);
+      }
+
+      if (value === 'K') whiteKingCount++;
+      if (value === 'k') blackKingCount++;
+
+      if (value >= 'A' && value <= 'Z') whitePieceCount++;
+      if (value >= 'a' && value <= 'z') blackPieceCount++;
+
+      if ((rowIndex === 0 || rowIndex === 7) && (value === 'P' || value === 'p')) {
+        throw new Error(`${context}: pawn on promotion rank at [${rowIndex},${colIndex}]`);
+      }
+
+      return value;
+    });
+  });
+
+  state.board = normalizedBoard;
+
+  if (whiteKingCount !== 1 || blackKingCount !== 1) {
+    return {
+      ok: false,
+      error: `${context}: invalid king count (white=${whiteKingCount}, black=${blackKingCount})`,
+    };
+  }
+
+  if (whitePieceCount > 16 || blackPieceCount > 16) {
+    return {
+      ok: false,
+      error: `${context}: too many pieces (white=${whitePieceCount}, black=${blackPieceCount})`,
+    };
+  }
+
+  if (typeof state.sideToMove === 'string') {
+    const normalized = state.sideToMove.trim().toLowerCase();
+    if (normalized === 'w') state.sideToMove = 'white';
+    else if (normalized === 'b') state.sideToMove = 'black';
+    else state.sideToMove = normalized;
+  }
+
+  if (state.sideToMove !== 'white' && state.sideToMove !== 'black') {
+    return { ok: false, error: `${context}: invalid sideToMove '${state.sideToMove}'` };
+  }
+
+  if (state.gameStatus != null && !ALLOWED_GAME_STATUS.has(state.gameStatus)) {
+    state.gameStatus = 'ongoing';
+  }
+
+  if (state.inCheck != null) {
+    state.inCheck = Boolean(state.inCheck);
+  }
+
+  if (state.moveHistory != null && !Array.isArray(state.moveHistory)) {
+    return { ok: false, error: `${context}: moveHistory must be an array` };
+  }
+
+  if (Array.isArray(state.moveHistory)) {
+    state.moveHistory = state.moveHistory
+      .filter((entry) => typeof entry === 'string')
+      .map((entry) => entry.trim().toLowerCase());
+  }
+
+  return { ok: true, state };
+};
+
+const enforceValidState = (rawState, context) => {
+  try {
+    const checked = normalizeAndValidateGameState(rawState, context);
+    if (!checked.ok) {
+      throw new Error(checked.error);
+    }
+    return checked.state;
+  } catch (err) {
+    throw new Error(`State integrity check failed: ${err.message}`);
+  }
+};
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'CheckmateAI server running' });
 });
@@ -76,7 +181,8 @@ app.post('/api/game/new', async (req, res) => {
   try {
     const { fen } = req.body || {};
     const result = await engine.initGame(fen);
-    res.json(result);
+    const safeState = enforceValidState(result, 'api/game/new');
+    res.json(safeState);
   } catch (err) {
     console.error('Error initializing game:', err);
     res.status(500).json({ status: 'error', message: err.message });
@@ -94,7 +200,8 @@ app.post('/api/game/move', async (req, res) => {
     }
 
     const result = await engine.makeMove(validated.move);
-    res.json(result);
+    const safeState = enforceValidState(result, 'api/game/move');
+    res.json(safeState);
   } catch (err) {
     console.error('Error making move:', err);
     res.status(500).json({ status: 'error', message: err.message });
@@ -105,7 +212,8 @@ app.post('/api/game/ai-move', async (req, res) => {
   try {
     const depth = req.body?.depth || 4;
     const result = await engine.getAIMove(depth);
-    res.json(result);
+    const safeState = enforceValidState(result, 'api/game/ai-move');
+    res.json(safeState);
   } catch (err) {
     console.error('Error getting AI move:', err);
     res.status(500).json({ status: 'error', message: err.message });
@@ -138,7 +246,8 @@ app.post('/api/game/undo', async (req, res) => {
   try {
     const count = req.body?.count || 2;
     const result = await engine.undo(count);
-    res.json(result);
+    const safeState = enforceValidState(result, 'api/game/undo');
+    res.json(safeState);
   } catch (err) {
     console.error('Error undoing move:', err);
     res.status(500).json({ status: 'error', message: err.message });
@@ -148,7 +257,8 @@ app.post('/api/game/undo', async (req, res) => {
 app.get('/api/game/state', async (req, res) => {
   try {
     const result = await engine.getState();
-    res.json(result);
+    const safeState = enforceValidState(result, 'api/game/state');
+    res.json(safeState);
   } catch (err) {
     console.error('Error getting state:', err);
     res.status(500).json({ status: 'error', message: err.message });
@@ -173,7 +283,7 @@ wss.on('connection', (ws) => {
         const gameId = makeGameId();
         const roomEngine = new EngineBridge();
         roomEngine.start();
-        const initState = await roomEngine.initGame();
+        const initState = enforceValidState(await roomEngine.initGame(), 'ws/create_game');
 
         const playerId = randomUUID();
         const playerName = message.playerName || 'Host';
@@ -255,7 +365,7 @@ wss.on('connection', (ws) => {
           return;
         }
 
-        const result = await room.engine.makeMove(validated.move);
+        const result = enforceValidState(await room.engine.makeMove(validated.move), 'ws/make_move');
         if (result.status !== 'ok') {
           sendJson(ws, { type: 'error', payload: { error: result.message || 'Illegal move' } });
           return;
